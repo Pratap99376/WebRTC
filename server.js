@@ -1,6 +1,4 @@
-
-
-    var WebSocket = require('ws').Server;
+var WebSocket = require('ws').Server;
     var wss = new WebSocket({port: 8000});
     var users = {};
     wss.on("connection",(connection) => {
@@ -65,4 +63,4 @@
     });
     function sendTo(connection,data){
     	connection.send(JSON.stringify(data));
-    }
+    } 
