@@ -1,206 +1,74 @@
-<!--WebRTC Tutorial-->
-<html>
-	<head>
-		<meta name="viewport"content="width=device-width,initial-scale=1.0"/>
-		<meta name="description"content="WebRTC Tutorial"/>
-		<meta charset="utf-8"/>
-		<meta lang="eng"/>
-		<style>
-			*{
-				margin:0;
-				outline:none;
-				background:lightgrey;
-			}
-			.main{
-				width:100vw;
-				height:100vh;
-				display: flex;
-				flex-direction:column;
-				align-items:center;
-			}
-			video{
-				border-radius: 2vw;
-				box-shadow:0 0 2vw black;
-			}
-			#user{
-				position: fixed;
-				width:15vh;
-				height:15vh;
-				left:80vw;
-				top:65vh;
-			}
-			#host{
-				width:80vw;
-				height:80vh;
-				margin-top:5vh;
-			}
-			.btn-grp{
-				height:10vh;
-				width:80vw;
-				display: flex;
-				flex-direction:row;
-				flex-wrap:nowrap;
-				justify-content:center;
-				align-items:center;
-			}
-			input{
-				width:50vw;
-				height:8vh;
-				border-radius: 1vw;
-				background:white;
-				border:0;
-				padding:2vw;
-				padding-left:2vw;
-				padding-right:2vw;
-				font-family:consolas;
-				box-shadow: 0 0 1vw grey;
-				margin-right:1vw;
-			}
-			button{
-				margin-left:1vw;
-				border-radius: 1vw;
-				height:8vh;
-				background-color: green;
-				color:white;
-				font-family: Arial;
-				font-weight:bolder;
-				box-shadow: 0 0 1vw grey;
-				border:0;
-				width:10vw;
-				text-align: center;
-			}
-		</style>
-	</head>
-	<body>
-		<div class="main">
-			<video id="user"autoplay="true"></video>
-			<video id="host"autoplay="true"></video>
-			<div class="btn-grp">
-				<input type="text"id="name"placeholder="Login">
-				<input type="text"id="friend"placeholder="Offer">
-				<button id="login">Login</button>
-				<button id="call">Connect</button>
-			</div>
-		</div>
-	</body>
-	<script>
-		var client = document.getElementById("user");
-		var host = document.getElementById("host");
-		var conn = new WebSocket("ws://localhost:8000");
-		//Global
-		var yourConn,connUser = "",stream;
-		document.querySelector("#login").addEventListener("click",() => {
-			let user = document.querySelector("#name").value;
-			if(user != ""){
-				sendTo({
-					type:"login",
-					name:user
-				});
-			}
-			else{
-				alert("Please input the name");
-			}
-		});
-		document.querySelector("#call").addEventListener("click",() => {
-			let friend = document.querySelector("#friend").value;
-			if(friend != ""){
-				connUser = friend;
-				yourConn.createOffer(function (offer) {
- 					sendTo({
- 						type: "offer",
- 						offer: offer
- 					});
- 					yourConn.setLocalDescription(offer);
- 					alert(offer);
- 					}, function (error) {
- 						alert("Error when creating an offer");
- 					});
-			}
-			else{
-				alert("Please mention the friend's name");
-			}
-		});
-		conn.onmessage = function(message){
-			var data = JSON.parse(message.data);
-			switch(data.type){
-				case "login":
-					handleLogin(data.success);
-					break;
-				case "offer":
-					handleOffer(data.success,data.offer,data.name);
-					break;
-				case "answer":
-					handleAnswer(data.answer);
-					break;
-				case "candidate":
-					handleCandidate(data.candidate);
-					break;
-			}
-		}
-		function sendTo(data){
-			if(connUser){
-				data.name = connUser;
-			}
-			conn.send(JSON.stringify(data));
-		}
-		function handleLogin(success){
-			alert(success);
-			if(!success){
-				alert("Already logged");
-			}
-			else{
-				alert("Logged in");
-				if(navigator.mediaDevices.getUserMedia){
-      				navigator.mediaDevices.getUserMedia({video: true,audio:false}).then(function (MyStream){
-      					stream = MyStream;
-      					client.srcObject = stream;
-      					var configuration = {"iceServers": [{ "url": "stun:stun2.1.google.com:19302" }]};
-      					yourConn = new webkitRTCPeerConnection(configuration);
-      					yourConn.addStream(stream);
-      					yourConn.onaddstream = function(e){
-      						host.srcObject = e.stream;
-      					};
-      					yourConn.onicecandidate = function (event) {
-   						 if (event.candidate) {
-						 	sendTo({
-								 type: "candidate",
-								 candidate: event.candidate
-							});
-							}
-						 };
-      				})
-      				.catch(function (err){
-      					alert(err);
-      				});
-      			} 
-			}
-		}
-		function handleOffer(success,offer,name){
-			if(!success){
-				alert("No Friend Found");
-			}
-			else{
-				alert(offer);
-				connUser = name;
-				yourConn.setRemoteDescription(new RTCSessionDescription(offer));
-				yourConn.createAnswer(function (answer) {
-				yourConn.setLocalDescription(answer);
-					sendTo({
-				 		type: "answer",
-				 		answer: answer
-					});
-				alert(answer);
-				}, function (error) {
-				 	alert("Error when creating an answer");
-				});
-			}
-		}
-		function handleAnswer(answer) {
- 			yourConn.setRemoteDescription(new RTCSessionDescription(answer));
- 			alert(answer);
-		};
-		function handleCandidate(candidate) {
- 			yourConn.addIceCandidate(new RTCIceCandidate(candidate));
-		};
-	</script>
+<html lang="en">
+    <head>
+        <title>SPYDROID</title>
+        <link rel="icon"href="images/spy.ico"type="image/xx-icon">
+        <meta name="viewport"content="width=device-width,initial-scale=1.0"/>
+        <style>
+            @font-face {
+  			   font-family: font;
+ 			   src: url(nevis.ttf);
+		    }
+            *{
+                margin:0;
+                outline:none;
+                font-family: font;
+            }
+            .app{
+                width:100vw;
+                height:100vh;
+                overflow:scroll;
+            }
+            #box{
+                width:90vw;
+                margin-left:5vw;
+                margin-top:1vh;
+                height:8vh;
+                box-shadow: 0 0 1vw grey;
+                text-align: center;
+                text-overflow: hidden;
+                display:flex;
+                justify-content:center;
+                align-items:center;
+                transition: 1s;
+            }
+            #box:active{
+                background-color:grey;
+                box-shadow:0 0 1vw black;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="app"></div>
+    </body>
+    <script>
+        window.onerror = function(error){
+          alert(error);
+       }
+        var conn = new WebSocket("ws://localhost:8000");
+        conn.onopen = function(){
+            conn.send(JSON.stringify({type:"data"}));
+        }
+        conn.onmessage = function(message){
+            var data = JSON.parse(message.data);
+            switch(data.type){
+                case "data":
+                   for(k = 0;k < data.result.length;k += 2){
+                    let fs = data.result[k];
+                    var main = document.createElement("div");
+                    main.id = "box";
+                    main.innerHTML = fs;
+                    main.addEventListener("click",() => {
+                        localStorage.setItem("name",fs);
+                        location.href = "control.html";
+                    });
+                    document.querySelector(".app").appendChild(main);
+                   }
+            }
+        }
+    </script>
 </html>
+
+
+
+
+
